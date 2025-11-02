@@ -6,8 +6,36 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constant";
 import { TRPCError } from "@trpc/server";
+import { meetingsInsertSchema, meetingsUpdateSchema } from "./schema";
 
 export const meetingsRouter = createTRPCRouter({
+
+  update: protectedProcedure
+    .input(meetingsUpdateSchema)
+    .mutation(async ({ input, ctx }) => {
+      // Build values to set (exclude id)
+      const setValues: any = {
+        name: input.name,
+        agentId: input.agentId,
+        scheduledAt: new Date(input.scheduledAt),
+      };
+
+      const [updatedMeeting] = await db
+        .update(meetings)
+        .set(setValues)
+        .where(and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)))
+        .returning();
+
+      if (!updatedMeeting) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Meeting not found",
+        });
+      }
+
+      return updatedMeeting;
+    }),
+
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input,ctx }) => {
