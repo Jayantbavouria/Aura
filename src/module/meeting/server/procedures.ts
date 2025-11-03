@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import {  meetings } from "@/db/schema";
-import { and, desc, eq, getTableColumns, ilike, count } from "drizzle-orm";
+import {  agents, meetings } from "@/db/schema";
+import { and, desc, eq, getTableColumns, ilike, count, sql } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 import { z } from "zod";
@@ -43,8 +43,11 @@ export const meetingsRouter = createTRPCRouter({
         .select(
           { 
             ...getTableColumns(meetings),
+            agent:agents,
+            duration:sql<number>`EXTRACT(EPOCH FROM (ended_at-started_at)`.as('duration'),
           })
         .from(meetings)
+        .innerJoin(agents,eq(meetings.agentId,agents.id))
         .where(and(
           eq(meetings.id, input.id)
           ,eq(meetings.userId, ctx.auth.user.id ),
@@ -70,22 +73,26 @@ export const meetingsRouter = createTRPCRouter({
 
     const data = await db
       .select({
-        
         ...getTableColumns(meetings),
-          })
+        agent: agents,
+        // duration in seconds (ended_at - scheduled_at)
+        duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - scheduled_at))`.as('duration'),
+      })
       .from(meetings)
+      .innerJoin(agents, eq(meetings.agentId, agents.id))
       .where(
         and(
           eq(meetings.userId, ctx.auth.user.id),
-          search?ilike(meetings.name, `%${search}%`):undefined,
+          search ? ilike(meetings.name, `%${search}%`) : undefined
         )
       )
-  .orderBy(desc(meetings.createdAt),desc(meetings.id))
+      .orderBy(desc(meetings.createdAt), desc(meetings.id))
       .limit(pageSize)
-      .offset((page-1)*pageSize);
+      .offset((page - 1) * pageSize);
   const [total] = await db
   .select({count: count()})
     .from(meetings)
+    .innerJoin(agents,eq(meetings.agentId,agents.id))
       .where(and( 
          eq(meetings.userId, ctx.auth.user.id),
           search?ilike(meetings.name, `%${search}%`):undefined,

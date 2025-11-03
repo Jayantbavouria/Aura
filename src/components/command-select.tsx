@@ -54,14 +54,7 @@ export const CommandSelect = ({
       <CommandResponsiveDialog shouldFilter={!onSearch} open={open} onOpenChange={setOpen}>
         <Command>
           {isSearchable && (
-            <CommandInput
-              placeholder="Search..."
-              onValueChange={(v: string) => {
-                // Explicitly call onSearch if provided. This avoids passing
-                // an undefined handler directly to the underlying cmdk input.
-                onSearch?.(v);
-              }}
-            />
+            <CommandInput placeholder="Search..." onValueChange={onSearch} />
           )}
           <CommandList>
             <CommandEmpty>
