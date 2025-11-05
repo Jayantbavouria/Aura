@@ -1,9 +1,9 @@
-
 "use client";
 
 import { format } from "date-fns";
 import { ColumnDef } from "@tanstack/react-table";
 import humanizeDuration from "humanize-duration";
+
 import { MeetingGetMany } from "../../types";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import {
@@ -53,16 +53,18 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
           <div className="flex items-center gap-x-1">
             <CornerDownRightIcon className="size-3 text-muted-foreground" />
             <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
-              {row.original.agent.name}
+              {row.original.agent?.name || "Unknown Agent"}
             </span>
           </div>
           <GeneratedAvatar
             variant="botttsNeutral"
-            seed={row.original.agent.name}
+            seed={row.original.agent?.name || "unknown"}
             className="size-4"
           />
           <span className="text-sm text-muted-foreground">
-            {row.original.createdAt ? format(new Date(row.original.createdAt), "MMM d") : ""}
+            {row.original.scheduledAt
+              ? format(new Date(row.original.scheduledAt), "MMM d")
+              : ""}
           </span>
         </div>
       </div>
