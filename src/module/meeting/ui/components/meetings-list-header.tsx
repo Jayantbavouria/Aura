@@ -6,7 +6,7 @@ import { NewMeetingDialog } from "./new-meeting-dialog"; // fixed typo: NewMeeti
 import { useState } from "react";
 import { MeetingsSearchFilter } from "./meetings-search-filter";
 import { MeetingsStatusFilter } from "./status-filter";
-import { AgentsIdFilter } from "./meetings-id-filter";
+import { AgentsIdFilter } from "./agent-id-filter";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"; 
 import { useMeetingsFilter } from "../../hooks/use-meetings-filter";
 

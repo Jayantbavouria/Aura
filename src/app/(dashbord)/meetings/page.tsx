@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { MeetingsListHeader } from "@/module/meeting/ui/components/meetings-list-header";
-import { MeetingsView, meetingsViewLoading, meetingsViewError } from "@/module/meeting/ui/views/meetings-views";
+import { MeetingsView, MeetingsViewLoading, MeetingsViewError } from "@/module/meeting/ui/views/meetings-views";
 import { trpc, getQueryClient } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { headers } from "next/headers";
@@ -15,8 +15,8 @@ interface Props {
     searchParams: Record<string, string | string[] | undefined>;
 }
 
-const MeetingsViewLoading = meetingsViewLoading;
-const MeetingsViewError = meetingsViewError;
+// const MeetingsViewLoading = meetingsViewLoading;
+// const MeetingsViewError = meetingsViewError;
 
 const Page = async ({searchParams}: Props) => {
     const filters = await loadSearchParams(FilterSearchParams)(Promise.resolve(searchParams));

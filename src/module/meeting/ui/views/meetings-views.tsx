@@ -36,7 +36,7 @@ export const MeetingsView = () => {
   );
 };
 
-export const meetingsViewLoading = () => {
+export const MeetingsViewLoading = () => {
   return (
     <LoadingState
       title="Loading Meetings"
@@ -44,7 +44,7 @@ export const meetingsViewLoading = () => {
     />
   );
 };
-export const meetingsViewError = () => {
+export const MeetingsViewError = () => {
   return (
     <ErrorState
       title="Failed to load Meetings"
