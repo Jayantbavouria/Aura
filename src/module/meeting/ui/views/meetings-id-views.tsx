@@ -1,4 +1,5 @@
 "use client";
+
 import { ErrorState } from "@/components/error_state";
 import { LoadingState } from "@/components/loading_state";
 import { useTRPC } from "@/trpc/client";
@@ -8,68 +9,96 @@ import { useRouter } from "next/navigation";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useState } from "react";
 import { UpdateMeetingDialog } from "../components/update-meeting-dialog";
+import { UpcomingState } from "../components/upcoming-state";
+import { ActiveState } from "../components/active-state";
+import { CancelledState } from "../components/cancelled-state";
+import { ProcessingState } from "../components/processing-state";
+
 interface Props {
- meetingId: string ;
+  meetingId: string;
 }
 
-export const MeetingIdView =  ({ meetingId }: Props) => {
-    const trpc=useTRPC();
-    const router=useRouter();
-    const queryClient=useQueryClient();
-    const [RemoveConfirmation,confirmRemove]=useConfirm(
-        "Are you sure?",
-        "The following action will remove this meeting"
-    )
-    const [UpdateMeetingDialogOpen,setUpdateMeetingDialogOpen]=useState(false);   
+export const MeetingIdView = ({ meetingId }: Props) => {
+  const trpc = useTRPC();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-    const { data } =useSuspenseQuery( trpc.meetings.getOne.queryOptions({ id: meetingId }));
-    const onRemoveMeeting=useMutation(
-        trpc.meetings.remove.mutationOptions({
-            onSuccess:()=>{
-                queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
-                router.push("/meetings");
-            },
-            
-        })
-    )
-    const handleRemoveMeeting=async()=>{
-        const ok=await confirmRemove();
-        if(!ok) return;
-        await onRemoveMeeting.mutateAsync({id:meetingId});
-    }
+  const [RemoveConfirmation, confirmRemove] = useConfirm(
+    "Are you sure?",
+    "The following action will remove this meeting"
+  );
 
-    return( <>
-        <RemoveConfirmation/>
-        <UpdateMeetingDialog
-            isOpen={UpdateMeetingDialogOpen}
-            onOpenChange={setUpdateMeetingDialogOpen}
-            initialValues={data}
-            />
-        <div  className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4" >
-            <MeetingIdViewHeader
-                meetingId={meetingId}
-                meetingName={data.name}
-                onEdit={()=>setUpdateMeetingDialogOpen(true)}
-                onRemove={handleRemoveMeeting}
-            />
-            {JSON.stringify(data,null,2)}
-        </div>
+  const [UpdateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
+
+  const { data } = useSuspenseQuery(
+    trpc.meetings.getOne.queryOptions({ id: meetingId })
+  );
+
+  const onRemoveMeeting = useMutation(
+    trpc.meetings.remove.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+        router.push("/meetings");
+      },
+    })
+  );
+
+  const handleRemoveMeeting = async () => {
+    const ok = await confirmRemove();
+    if (!ok) return;
+    await onRemoveMeeting.mutateAsync({ id: meetingId });
+  };
+
+  const isActive = data.status === "active";
+  const isUpcoming = data.status === "upcoming";
+  const isCancelled = data.status === "cancelled";
+  const isCompleted = data.status === "completed";
+  const isProcessing = data.status === "processing";
+
+  return (
+    <>
+      <RemoveConfirmation />
+      <UpdateMeetingDialog
+        isOpen={UpdateMeetingDialogOpen}
+        onOpenChange={setUpdateMeetingDialogOpen}
+        initialValues={data}
+      />
+
+      <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
+        <MeetingIdViewHeader
+          meetingId={meetingId}
+          meetingName={data.name}
+          onEdit={() => setUpdateMeetingDialogOpen(true)}
+          onRemove={handleRemoveMeeting}
+        />
+
+        {isCancelled && <CancelledState/>}
+        {isProcessing && <ProcessingState/>}
+        {isCompleted && <div>Completed</div>}
+        {isActive&& <ActiveState meetingId={meetingId}/> }
+        {isUpcoming && (<UpcomingState
+          meetingId={meetingId}
+          onCancleMeeting={()=>{}}
+          isCancelling={false}
+          />)}
+      </div>
     </>
-); 
+  );
 };
 
 export const MeetingsIdViewLoading = () => {
   return (
     <LoadingState
-      title="Loading Meetings"
+      title="Loading Meeting"
       description="This may take a few seconds"
     />
   );
 };
+
 export const MeetingsIdViewError = () => {
   return (
     <ErrorState
-      title="Failed to load Meetings"
+      title="Failed to load Meeting"
       description="Something went wrong"
     />
   );
