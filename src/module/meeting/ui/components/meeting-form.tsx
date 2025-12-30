@@ -27,7 +27,7 @@ import { CommandSelect } from "@/components/command-select";
 import { NewAgentDialog } from "@/module/agents/ui/components/new-agent-dialog";
 
 interface MeetingFormProps {
-  onSuccess?: (id?:string) => void;
+  onSuccess?: (id?: string) => void;
   onCancel?: () => void;
   initialValues?: MeetingGetOne;
 }
@@ -50,7 +50,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
         await queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
         onSuccess?.(data.id);
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     })
@@ -65,7 +65,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
           onSuccess?.();
         }
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     })
@@ -85,7 +85,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
 
   const onSubmit = (values: z.infer<typeof meetingsInsertSchema>) => {
     if (isEdit) {
-      updateMeeting.mutate({ ...values, id:initialValues!.id });
+      updateMeeting.mutate({ ...values, id: initialValues!.id });
     } else {
       createMeeting.mutate(values);
     }
@@ -95,7 +95,7 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
     <NewAgentDialog isOpen={openNewAgenstDialog} onOpenChange={setOpenNewAgentDialog} />
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-       
+
         <FormField
           name="name"
           control={form.control}
@@ -118,15 +118,15 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
               <FormLabel>Agent</FormLabel>
               <FormControl>
                 <CommandSelect
-                  options={(agent.data?.items??[]).map((agent)=>({
-                    id:agent.id,
-                    value:agent.id,
-                    children:(
+                  options={(agent.data?.items ?? []).map((agent) => ({
+                    id: agent.id,
+                    value: agent.id,
+                    children: (
                       <div className="flex items-center gap-x-2">
                         <GeneratedAvatar
                           variant="botttsNeutral"
                           seed={agent.name}
-                          className="border size-6"/>
+                          className="border size-6" />
                         <span>{agent.name}</span>
                       </div>
                     )
@@ -135,11 +135,11 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
                   onSearch={setAgentSearch}
                   value={field.value}
                   placeholder="SelecT an agent"
-                  />
+                />
               </FormControl>
               {/* Debug helpers: show current search and number of results. Remove in prod. */}
               <div className="mt-2 text-xs text-muted-foreground">
-                <div>debug: search="{agentSearch}"</div>
+                <div>debug: search=&quot;{agentSearch}&quot;</div>
                 <div>debug: results={agent.data?.items?.length ?? 0}</div>
                 {agent.isFetching && <div>debug: fetching...</div>}
                 {agent.isError && <div className="text-destructive">debug: error fetching agents</div>}
@@ -167,6 +167,6 @@ export const MeetingForm = ({ onSuccess, onCancel, initialValues }: MeetingFormP
         </div>
       </form>
     </Form>
-    </>
+  </>
   );
 };

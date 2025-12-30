@@ -12,21 +12,21 @@ import { SearchParams } from "nuqs/server";
 import { FilterSearchParams } from "@/module/meeting/params";
 
 interface Props {
-    searchParams: Record<string, string | string[] | undefined>;
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 // const MeetingsViewLoading = meetingsViewLoading;
 // const MeetingsViewError = meetingsViewError;
 
-const Page = async ({searchParams}: Props) => {
-    const filters = await loadSearchParams(FilterSearchParams)(Promise.resolve(searchParams));
-     const session = await auth.api.getSession({
+const Page = async ({ searchParams }: Props) => {
+    const filters = await loadSearchParams(FilterSearchParams)(searchParams);
+    const session = await auth.api.getSession({
         headers: await headers(),
-      });
-      
-      if (!session) {
+    });
+
+    if (!session) {
         redirect("/auth/sign-in");
-      }
+    }
     const queryClient = getQueryClient();
     await queryClient.prefetchQuery(trpc.meetings.getMany.queryOptions({
         ...filters,
@@ -34,14 +34,14 @@ const Page = async ({searchParams}: Props) => {
 
     return (
         <>
-        <MeetingsListHeader/>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-            <Suspense fallback={<MeetingsViewLoading/>}>
-                <ErrorBoundary fallback={<MeetingsViewError/>}>
-                    <MeetingsView />
-                </ErrorBoundary>
-            </Suspense>
-        </HydrationBoundary>
+            <MeetingsListHeader />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Suspense fallback={<MeetingsViewLoading />}>
+                    <ErrorBoundary fallback={<MeetingsViewError />}>
+                        <MeetingsView />
+                    </ErrorBoundary>
+                </Suspense>
+            </HydrationBoundary>
         </>
     );
 };

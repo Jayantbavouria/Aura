@@ -69,11 +69,11 @@ export const CallConnect = ({
         if (isMounted) {
           setClient(_client);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // capture errors during client initialization
         // eslint-disable-next-line no-console
         console.error("StreamVideoClient init error:", err);
-        setClientError(err?.message ?? String(err));
+        setClientError(err instanceof Error ? err.message : String(err));
       }
     };
 

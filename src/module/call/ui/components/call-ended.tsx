@@ -15,12 +15,12 @@ export const CallEnded = () => {
             <p className="text-sm">Summary will appear in a few minutes. </p>
           </div>
 
-          <div className="flex justify-between w-full  " >
-                <Button  asChild>
-                    <Link href="/meetings">
-                    Back to meetings
-                    </Link>
-                </Button>
+          <div className="flex justify-between w-full">
+            <Button asChild>
+              <Link href="/meetings">
+                Back to meetings
+              </Link>
+            </Button>
 
           </div>
         </div>

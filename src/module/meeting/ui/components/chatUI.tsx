@@ -14,7 +14,7 @@ import {
 
 import { useTRPC } from "@/trpc/client";
 import { LoadingState } from "@/components/loading_state";
-import "stream-chat-react/dist/css/index.css";
+import "stream-chat-react/css/v2/index.css";
 
 interface ChatUIProps {
     meetingId: string;
@@ -22,19 +22,23 @@ interface ChatUIProps {
     userId: string;
     userName: string;
     userImage: string | undefined;
-};
+}
 
 export const ChatUI = ({
     meetingId,
     meetingName,
     userId,
     userName,
-    userImage
+    userImage,
 }: ChatUIProps) => {
     const trpc = useTRPC();
-    const { mutateAsync: generateChatToken } = useMutation(trpc.meetings.generateChatToken.mutationOptions());
 
-    const [channel, setChannel] = useState<StreamChannel>();
+    const { mutateAsync: generateChatToken } = useMutation(
+        trpc.meetings.generateChatToken.mutationOptions()
+    );
+
+    const [channel, setChannel] = useState<StreamChannel | null>(null);
+
     const client = useCreateChatClient({
         apiKey: process.env.NEXT_PUBLIC_STREAM_CHAT_API_KEY!,
         tokenOrProvider: generateChatToken,
@@ -42,31 +46,41 @@ export const ChatUI = ({
             id: userId,
             name: userName,
             image: userImage,
-        }
-    })
+        },
+    });
+
     useEffect(() => {
         if (!client) return;
-        const channel = client.channel("messaging", meetingId, {
 
-            members: [userId]
+        const channel = client.channel("messaging", meetingId, {
+            members: [userId],
         });
+
         setChannel(channel);
-    }, [client, meetingId, meetingName, userId]);
-    if (!client) {
-        return <LoadingState title={"Loading..."} description={"Please wait while we load the chat"} />;
+    }, [client, meetingId, userId]);
+
+    if (!client || !channel) {
+        return (
+            <LoadingState
+                title="Loading..."
+                description="Please wait while we load the chat"
+            />
+        );
     }
+
     return (
-        <div className="bg-white rounded-lg border overflow-hidden" >
+        <div className="bg-white rounded-lg border overflow-hidden">
             <Chat client={client}>
-                <Channel channel={channel} />
-                <Window>
-                    <div className="flex-1 overflow-y-auto max-h-[calc(100vh-23rem)]border-b " >
-                        <MessageList />
-                    </div>
-                    <MessageInput />
-                </Window>
-                <Thread />
+                <Channel channel={channel}>
+                    <Window>
+                        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-23rem)] border-b">
+                            <MessageList />
+                        </div>
+                        <MessageInput />
+                    </Window>
+                    <Thread />
+                </Channel>
             </Chat>
         </div>
-    )
-}
+    );
+};

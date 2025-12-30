@@ -19,10 +19,10 @@ import { streamChat } from "@/lib/stream-chat";
 export const meetingsRouter = createTRPCRouter({
   generateChatToken: protectedProcedure.mutation(async ({ ctx }) => {
     const token = streamChat.createToken(ctx.auth.user.id);
-    await streamChat.upsertUsers({
+    await streamChat.upsertUsers([{
       id: ctx.auth.user.id,
       role: "admin",
-    });
+    }]);
 
     return token;
   }),
@@ -156,7 +156,7 @@ export const meetingsRouter = createTRPCRouter({
   update: protectedProcedure
     .input(meetingsUpdateSchema)
     .mutation(async ({ input, ctx }) => {
-      const setValues: any = {
+      const setValues: { name: string; agentId: string; scheduledAt: Date } = {
         name: input.name,
         agentId: input.agentId,
         scheduledAt: new Date(input.scheduledAt),
@@ -295,14 +295,20 @@ export const meetingsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const insertValues: any = {
+      const insertValues: {
+        name: string;
+        agentId: string;
+        scheduledAt: Date;
+        userId: string;
+        status?: typeof MeetingStatus[keyof typeof MeetingStatus];
+      } = {
         name: input.name,
         agentId: input.agentId,
         scheduledAt: new Date(input.scheduledAt),
         userId: ctx.auth.user.id,
       };
 
-      if (input.status) insertValues.status = input.status;
+      if (input.status) insertValues.status = input.status as typeof MeetingStatus[keyof typeof MeetingStatus];
 
       const [createdMeeting] = await db
         .insert(meetings)
