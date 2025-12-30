@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura App Workflow Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#0f172a',
+                primaryTextColor: '#f8fafc',
+                primaryBorderColor: '#64748b',
+                lineColor: '#94a3b8',
+                secondaryColor: '#1e293b',
+                tertiaryColor: '#334155'
+            },
+            flowchart: {
+                curve: 'basis',
+                htmlLabels: true
+            }
+        });
+    </script>
+    <style>
+        body { background-color: #020617; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        .diagram-container {
+            width: 100%;
+            height: 90vh;
+            overflow: auto;
+            background-color: #0f172a;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-7xl mx-auto mb-6">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent mb-2">
+            Aura System Architecture
+        </h1>
+        <p class="text-slate-400">
+            Visualizing the data flow between Next.js, TRPC, Stream Video, OpenAI, and Inngest.
+        </p>
+    </div>
+
+    <div class="diagram-container">
+        <div class="mermaid">
+            flowchart TD
+                %% Subgraphs for Logical Grouping
+                subgraph Client ["🖥️ Client Side (Next.js / React)"]
+                    AuthUI["Auth UI<br/>(Sign In/Up)"]
+                    Dashboard["Dashboard<br/>(/agents, /meetings)"]
+                    MeetingRoom["Meeting Room<br/>(/call/[id])"]
+                    StreamSDK["Stream Video React SDK"]
+                end
+
+                subgraph Server ["☁️ Server Side (Next.js API)"]
+                    TRPC["TRPC Router<br/>(Procedures)"]
+                    AuthLib["Better-Auth<br/>(Session Mgmt)"]
+                    WebhookAPI["API Route<br/>(/api/webhook)"]
+                    StreamClient["Stream Node SDK"]
+                end
+
+                subgraph Database ["🗄️ Database (Neon/Postgres)"]
+                    DB[("Drizzle ORM")]
+                end
+
+                subgraph BackgroundJobs ["⚙️ Background Processing"]
+                    InngestServer["Inngest Server"]
+                    InngestFn["Function: meetingsProcessing"]
+                end
+
+                subgraph ExternalServices ["🌐 External Services"]
+                    StreamAPI["Stream.io Video API"]
+                    OpenAI["OpenAI API<br/>(Realtime & GPT-4)"]
+                end
+
+                %% 1. Authentication Flow
+                AuthUI -->|Login/OAuth| AuthLib
+                AuthLib -->|Create Session| DB
+                AuthLib -->|Session Token| Client
+
+                %% 2. Data Management (Agents/Meetings)
+                Dashboard -->|Query/Mutation| TRPC
+                TRPC -->|CRUD Agents/Meetings| DB
+                TRPC -->|Create Call Room| StreamAPI
+                StreamAPI -->|Return Call ID| TRPC
+
+                %% 3. Joining a Call
+                MeetingRoom -->|Mounts| StreamSDK
+                StreamSDK -->|Request Token| TRPC
+                TRPC -->|Generate Token| StreamClient
+                StreamClient -->|Token| StreamSDK
+                StreamSDK -->|Connect WebSocket| StreamAPI
+
+                %% 4. The Live Call & AI Hook
+                StreamAPI -->|Event: session.started| WebhookAPI
+                WebhookAPI -->|Verify Signature| StreamClient
+                WebhookAPI -->|Fetch Agent Info| DB
+                WebhookAPI -->|Connect OpenAI Realtime| StreamClient
+                StreamClient -->|Bridge Audio| OpenAI
+                OpenAI <-->|Realtime Voice| StreamAPI
+
+                %% 5. Post-Call Processing
+                StreamAPI -->|Event: transcription.ready| WebhookAPI
+                WebhookAPI -->|Update Transcript URL| DB
+                WebhookAPI -->|Trigger Event| InngestServer
+                
+                InngestServer -->|Trigger| InngestFn
+                InngestFn -->|Fetch Transcript| StreamAPI
+                InngestFn -->|Fetch Speakers| DB
+                InngestFn -->|Generate Summary| OpenAI
+                InngestFn -->|Update Meeting Status| DB
+
+                %% Styling
+                style Client fill:#1e293b,stroke:#3b82f6,stroke-width:2px
+                style Server fill:#1e293b,stroke:#8b5cf6,stroke-width:2px
+                style Database fill:#1e293b,stroke:#22c55e,stroke-width:2px
+                style ExternalServices fill:#0f172a,stroke:#f59e0b,stroke-width:2px,stroke-dasharray: 5 5
+                style BackgroundJobs fill:#1e293b,stroke:#ec4899,stroke-width:2px
+
+                classDef highlight fill:#334155,stroke:#94a3b8,color:#fff;
+                class InngestFn,WebhookAPI,StreamSDK highlight;
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
+            <h3 class="text-blue-400 font-bold mb-2">1. Meeting Setup</h3>
+            <ul class="list-disc list-inside text-sm text-slate-400 space-y-1">
+                <li>User creates an Agent (Persona/Instructions).</li>
+                <li>User schedules a Meeting linked to that Agent.</li>
+                <li>TRPC creates the call room in Stream.io immediately.</li>
+            </ul>
+        </div>
+        <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
+            <h3 class="text-purple-400 font-bold mb-2">2. Live Interaction</h3>
+            <ul class="list-disc list-inside text-sm text-slate-400 space-y-1">
+                <li>User joins the call via <code>/call/[id]</code>.</li>
+                <li>Stream webhook notifies your server.</li>
+                <li>Server connects the specific Agent's instructions to OpenAI Realtime API.</li>
+                <li>AI participates in the call as a user.</li>
+            </ul>
+        </div>
+        <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
+            <h3 class="text-pink-400 font-bold mb-2">3. Post-Processing</h3>
+            <ul class="list-disc list-inside text-sm text-slate-400 space-y-1">
+                <li>Call ends -> Stream generates transcript.</li>
+                <li>Webhook triggers Inngest function.</li>
+                <li>Inngest parses transcript, maps speaker names, and uses GPT-4o to summarize.</li>
+                <li>Result stored in Neon DB.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
