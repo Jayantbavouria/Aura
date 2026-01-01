@@ -43,6 +43,12 @@ export const CallUI = ({ meetingId, meetingName }: Props) => {
     const handleLeave = async () => {
         if (!call || leaving) return;
         setLeaving(true);
+        if (call.state.callingState === CallingState.LEFT) {
+            setLeaving(false);
+            setShow("ended");
+            return;
+        }
+
         try {
             await call.leave();
         } catch (err) {

@@ -36,6 +36,8 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.text();
+  console.log("Webhook received body length:", body.length);
+
   if (!verifySignatureWithSdk(body, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
@@ -46,7 +48,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const eventType = (payload as Record<string, unknown>)["type"];
-  if (eventType === "call.session.started") {
+  console.log("Webhook Event Type:", eventType);
+
+  if (eventType === "call.session_started") {
+    console.log("Processing call.session.started event");
     const event = payload as CallSessionStartedEvent;
     const meetingId = event.call.custom?.meetingId;
     if (!meetingId) {
@@ -132,7 +137,7 @@ export async function POST(req: NextRequest) {
     const call = streamVideo.video.call("default", meetingId);
     await call.end();
   }
-  else if (eventType === "call.session.ended") {
+  else if (eventType === "call.session_ended") {
     const event = payload as CallEndedEvent;
     const meetingId = event.call.custom?.meetingId;
 
@@ -144,7 +149,7 @@ export async function POST(req: NextRequest) {
       .set({ status: "processing", endedAt: new Date(), })
       .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")));
   }
-  else if (eventType === "call.transcription.ready") {
+  else if (eventType === "call.transcription_ready") {
     const event = payload as CallTranscriptionReadyEvent;
     const meetingId = event.call_cid.split(":")[1]; //call_cid format is "type:id"
 
@@ -164,7 +169,7 @@ export async function POST(req: NextRequest) {
       },
     });
   }
-  else if (eventType === "call.recording.ready") {
+  else if (eventType === "call.recording_ready") {
     const event = payload as CallRecordingReadyEvent;
     const meetingId = event.call_cid.split(":")[1]; //call_cid format is "type:id"
 

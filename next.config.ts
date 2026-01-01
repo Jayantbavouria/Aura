@@ -1,5 +1,4 @@
 const nextConfig = {
-  output: "export",
   outputFileTracingRoot: __dirname,
 } as const;
 
