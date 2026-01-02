@@ -12,10 +12,9 @@ import {
   CircleXIcon,
   ClockArrowUpIcon,
   CornerDownRightIcon,
-  VideoIcon,
   LoaderIcon,
 } from "lucide-react";
-import { cn, formatDuration } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 
@@ -89,19 +88,5 @@ export const columns: ColumnDef<MeetingGetMany[number]>[] = [
       );
     },
   },
-  {
-    accessorKey: "duration",
-    header: "Duration",
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className="capitalize [&svg]:size-4 text-muted-foreground flex items-center gap-x-1"
-      >
-        <ClockFadingIcon className="text-blue-700" />
-        {row.original.duration
-          ? formatDuration(row.original.duration)
-          : "No duration"}
-      </Badge>
-    ),
-  },
+
 ];

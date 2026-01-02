@@ -4,32 +4,10 @@ import { inngest } from "@/inngest/client";
 import { StreamTranscriptItem } from "@/module/meeting/types";
 import { eq, inArray } from "drizzle-orm";
 import JSONL from "jsonl-parse-stringify"
-import { createAgent, openai, TextMessage } from "@inngest/agent-kit";
+import OpenAI from "openai";
 
-const summarizer = createAgent({
-  name: "summarizer",
-  system: `
-    You are an expert summarizer. You write readable, concise, simple content. You are given a transcript of a meeting and you need to summarize it.
-
-Use the following markdown structure for every output:
-
-### Overview
-Provide a detailed, engaging summary of the session's content. Focus on major features, user workflows, and any key takeaways. Write in a narrative style, using full sentences. Highlight unique or powerful aspects of the product, platform, or discussion.
-
-### Notes
-Break down key content into thematic sections with timestamp ranges. Each section should summarize key points, actions, or demos in bullet format.
-  
-Example:
-#### Section Name
-- Main point or demo shown here
-- Another key insight or interaction
-- Follow-up tool or explanation provided
-
-#### Next Section
-- Feature X automatically does Y
-- Mention of integration with Z
-  `.trim(),
-  model: openai({ model: "gpt-4o", apiKey: process.env.OPENAI_API_KEY }),
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export const meetingsProcessing = inngest.createFunction(
@@ -42,28 +20,32 @@ export const meetingsProcessing = inngest.createFunction(
 
     const transcript = await step.run("parse-transcript", async () => {
       return JSONL.parse<StreamTranscriptItem>(response);
-
     });
 
     const transcriptWithSpeakers = await step.run("add-speakers", async () => {
       const speakerIds = [
-        ...new Set(transcript.map((item) => item.speaker_id)),];
+        ...new Set(transcript.map((item) => item.speaker_id)),
+      ];
 
       const userSpeaker = await db
         .select()
         .from(user)
         .where(inArray(user.id, speakerIds))
-        .then((users) => users.map((users) => ({
-          ...users,
-        })));
+        .then((users) =>
+          users.map((users) => ({
+            ...users,
+          }))
+        );
 
       const agentSpeaker = await db
         .select()
         .from(agents)
-        .where(inArray(user.id, speakerIds))
-        .then((agents) => agents.map((agent) => ({
-          ...agent,
-        })));
+        .where(inArray(agents.id, speakerIds))
+        .then((agents) =>
+          agents.map((agent) => ({
+            ...agent,
+          }))
+        );
 
       const speakers = [...userSpeaker, ...agentSpeaker];
 
@@ -86,20 +68,55 @@ export const meetingsProcessing = inngest.createFunction(
           },
         };
       });
+    });
 
+    const summary = await step.run("generate-summary", async () => {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `
+              You are an expert summarizer. You write readable, concise, simple content. You are given a transcript of a meeting and you need to summarize it.
 
-    }
+              Use the following markdown structure for every output:
 
+              ### Overview
+              Provide a detailed, engaging summary of the session's content. Focus on major features, user workflows, and any key takeaways. Write in a narrative style, using full sentences. Highlight unique or powerful aspects of the product, platform, or discussion.
 
-    );
-    const { output } = await summarizer.run(
-      "Summarize Meeting Transcript:" + JSON.stringify(transcriptWithSpeakers)
-    );
+              ### Notes
+              Break down key content into thematic sections with timestamp ranges. Each section should summarize key points, actions, or demos in bullet format.
+              
+              Example:
+              #### Section Name
+              - Main point or demo shown here
+              - Another key insight or interaction
+              - Follow-up tool or explanation provided
+
+              #### Next Section
+              - Feature X automatically does Y
+              - Mention of integration with Z
+            `.trim(),
+          },
+          {
+            role: "user",
+            content:
+              "Summarize Meeting Transcript:" +
+              JSON.stringify(transcriptWithSpeakers),
+          },
+        ],
+      });
+      return completion.choices[0].message.content || "No summary generated.";
+    });
+
     await step.run("save-summary", async () => {
       await db
         .update(meetings)
-        .set({ summary: (output[0] as TextMessage).content as string, status: "completed", }).where(eq(meetings.id, event.data.meetingId));
-
+        .set({
+          summary: summary,
+          status: "completed",
+        })
+        .where(eq(meetings.id, event.data.meetingId));
     });
-  },
+  }
 );

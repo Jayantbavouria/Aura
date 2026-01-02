@@ -18,13 +18,30 @@ interface Props {
 
 export const Transcript = ({ meetingId }: Props) => {
     const trpc = useTRPC();
-    const { data } = useQuery(trpc.meetings.getTranscript.queryOptions({
+    const { data, isLoading } = useQuery(trpc.meetings.getTranscript.queryOptions({
         id: meetingId,
     }))
     const [searchQuery, setSearchQuery] = useState("");
     const filteredData = (data ?? []).filter((item) => item.text.toString().toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (isLoading) {
+        return (
+            <div className="bg-white rounded-lg border px-4 py-5 flex flex-col gap-y-4 w-full h-full items-center justify-center">
+                <p className="text-muted-foreground">Loading transcript...</p>
+            </div>
+        );
+    }
+
+    if (!data || data.length === 0) {
+        return (
+            <div className="bg-white rounded-lg border px-4 py-5 flex flex-col gap-y-4 w-full h-full items-center justify-center">
+                <p className="text-muted-foreground">No transcript available.</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="bg-white rounded-lg border px-4 py-5 flex flex-col gap-y-4 w-full " >
+        <div className="bg-white rounded-lg border px-4 py-5 flex flex-col gap-y-4 w-full h-full" >
             <p className="text-sm font-medium" >Transcript</p>
             <div className="relative" >
                 <Input
@@ -35,7 +52,7 @@ export const Transcript = ({ meetingId }: Props) => {
                 />
                 <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2" />
             </div>
-            <ScrollArea>
+            <ScrollArea className="flex-1 h-full" >
                 <div className="flex flex-col gap-y-4" >
                     {filteredData.map((item) => {
                         return (
