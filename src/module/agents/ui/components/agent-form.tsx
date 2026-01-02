@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Ghost } from "lucide-react";
 import { toast } from "sonner";
+import { UpdateAgentDialog } from "./update-agent-dialog";
 
 interface AgentFormProps {
   onSuccess?: () => void;
@@ -37,6 +38,19 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
     trpc.agents.create.mutationOptions({
       onSuccess: async() => {
        await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
+        
+          onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })  
+  );
+
+  const updateAgent = useMutation(
+    trpc.agents.update.mutationOptions({
+      onSuccess: async() => {
+       await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
         if(initialValues?.id){  
           await  queryClient.invalidateQueries(trpc.agents.getOne.queryOptions({id:initialValues.id})); 
           onSuccess?.();
@@ -46,6 +60,7 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
       },
     })  
   );
+  
 
   const form = useForm<z.infer<typeof agentsInsertSchema>>({
     resolver: zodResolver(agentsInsertSchema),
@@ -56,11 +71,14 @@ export const AgentForm = ({ onSuccess, onCancel, initialValues }: AgentFormProps
   });
 
   const isEdit = !!initialValues?.id;
-  const isPending = createAgent.isPending;
+  const isPending = createAgent.isPending||updateAgent.isPending;
 
   const onSubmit = (values: z.infer<typeof agentsInsertSchema>) => {
     if (isEdit) {
-      console.log("TODO:update agent");
+      updateAgent.mutate({...values,
+        id:initialValues.id
+        
+      });
     } else {
       createAgent.mutate(values);
     }

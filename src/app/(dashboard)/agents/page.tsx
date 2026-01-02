@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
 import type { SearchParams } from "nuqs";
 import { AgentsListHeader } from "@/module/agents/ui/components/agents-list-header";
-import { AgentsView, AgentsViewLoading, AgentsViewError } from "@/module/agents/ui/views/agents-views"; 
+import { AgentsView, AgentsViewLoading, AgentsViewError } from "@/module/agents/ui/views/agents-views";
 
-import { TRPCReactProvider } from "@/trpc/client";
+
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { headers } from "next/headers";
@@ -11,7 +11,7 @@ import { redirect } from "next/navigation";
 
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { FilterSearchParams, loadSearchParams } from "@/module/agents/params" 
+import { FilterSearchParams, loadSearchParams } from "@/module/agents/params"
 
 interface Props {
   searchParams: Promise<SearchParams>;
@@ -19,11 +19,11 @@ interface Props {
 
 const Page = async ({ searchParams }: Props) => {
   const filters = await loadSearchParams(FilterSearchParams)(searchParams);
-  
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  
+
   if (!session) {
     redirect("/auth/sign-in");
   }

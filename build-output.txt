@@ -1,0 +1,151 @@
+﻿   Γû▓ Next.js 15.5.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+node.exe : Found 1 
+warning while optimizing 
+generated CSS:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (F  
+  ound 1 warning... gen   
+ erated CSS::String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+
+[2mΓöé @media 
+(prefers-color-scheme: 
+dark) {[22m
+[2mΓöé   &: is(.dark 
+*);[22m
+[2mΓöé[22m }
+[2mΓöå[22m 
+[33m[2m^--[22m 
+Unexpected end of 
+input[39m
+[2mΓöå[22m
+[2mΓöé :root {[22m
+[2mΓöé   --radius: 
+0.625rem;[22m
+
+ Γ£ô Compiled successfully in 8.1s
+   Linting and checking validity of types ...
+
+./src/app/(dashbord)/layout.tsx
+4:10  Warning: 'Sidebar' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'Children' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(dashbord)/meetings/page.tsx
+11:10  Warning: 'SearchParams' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/(dashbord)/meetings/[meetingId]/page.tsx
+3:10  Warning: 'MeetingsView' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/empty-state.tsx
+11:5  Warning: 'image' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/responsive_dialog.tsx
+12:5  Warning: 'DrawerContent' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/stream-vid.ts
+10:3  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+12:3  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./src/module/agents/ui/components/agent-form.tsx
+9:10  Warning: 'Textarea' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'Ghost' is defined but never used.  @typescript-eslint/no-unused-vars
+24:10  Warning: 'UpdateAgentDialog' is defined but never used.  @typescript-eslint/no-unused-vars
+34:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/auth/ui/views/sign-in-views.tsx
+189:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/module/auth/ui/views/sign-up-views.tsx
+248:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/module/call/ui/components/call-connect.tsx
+62:15  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+74:9  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./src/module/call/ui/components/call-ui.tsx
+12:26  Warning: 'meetingId' is defined but never used.  @typescript-eslint/no-unused-vars
+36:13  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+49:13  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./src/module/dashboard/components/dashboard-sidebar.tsx
+7:10  Warning: 'Item' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/dashboard/components/dashboard-user-button.tsx
+12:3  Warning: 'DrawerClose' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/meeting/server/schema.ts
+2:10  Warning: 'agentsInsertSchema' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/meeting/ui/components/chatUI.tsx
+29:5  Warning: 'meetingName' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/meeting/ui/components/columns.tsx
+15:3  Warning: 'VideoIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/module/meeting/ui/components/update-meeting-dialog.tsx
+4:10  Warning: 'useRouter' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+.next/types/app/(dashbord)
+/meetings/page.ts:34:29
+Type error: Type 'Props' 
+does not satisfy the 
+constraint 'PageProps'.
+  Types of property 
+'searchParams' are 
+incompatible.
+    Type 'Record<string, 
+string | string[] | 
+undefined>' is missing 
+the following properties 
+from type 'Promise<any>': 
+then, catch, finally, 
+[Symbol.toStringTag]
+
+[0m [90m 32 |[39m
+ [90m 33 |[39m [90m// 
+Check the prop type of 
+the entry function[39m
+[31m[1m>[22m[39m[90m 
+34 |[39m checkFields[33m
+<[39m[33mDiff[39m[33m<
+[39m[33mPageProps[39m[
+33m,[39m [33mFirstArg[3
+9m[33m<[39m[33mTEntry[
+39m[[32m'default'[39m][
+33m>[39m[33m,[39m [32m
+'default'[39m[33m>>[39m
+()
+ [90m    |[39m          
+                   
+[31m[1m^[22m[39m
+ [90m 35 |[39m
+ [90m 36 |[39m [90m// 
+Check the arguments and 
+return type of the 
+generateMetadata 
+function[39m
+ [90m 37 |[39m 
+[36mif[39m ([32m'genera
+teMetadata'[39m 
+[36min[39m entry) {[0m
+Next.js build worker 
+exited with code: 1 and 
+signal: null
