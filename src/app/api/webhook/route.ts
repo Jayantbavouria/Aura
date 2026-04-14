@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       if (typeof realtimeClient.updateSession === "function") {
         await realtimeClient.updateSession({
           instructions: existingAgent.instructions,
+          temperature: 0.2,
         });
       } else {
         console.warn("realtimeClient.updateSession is not a function");
@@ -234,6 +235,7 @@ export async function POST(req: NextRequest) {
 
       const GPTRespone = await openaiClient.chat.completions.create({
         model: "gpt-4o",
+        temperature: 0.2,
         messages: [{ role: "system", content: instructions }, ...previousMessages, { role: "user", content: text }],
       });
       const GPTResponeText = GPTRespone.choices[0].message.content;
