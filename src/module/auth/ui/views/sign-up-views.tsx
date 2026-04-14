@@ -68,7 +68,11 @@ export default function SignUpView() {
           router.push("/");
         },
         onError: ({ error }) => {
-          console.error("Signup error response:", error);  // <-- log full error for debugging
+          console.error("Signup error response:", {
+            message: error?.message,
+            status: error?.status,
+            statusText: error?.statusText,
+          });
           const message =
             error?.error?.message ||
             error?.message ||
@@ -95,7 +99,11 @@ export default function SignUpView() {
           setPending(false);
         },
         onError: ({ error }) => {
-          console.error("Signup error response:", error);  // <-- log full error for debugging
+          console.error("Social signup error response:", {
+            message: error?.message,
+            status: error?.status,
+            statusText: error?.statusText,
+          });
           const message =
             error?.error?.message ||
             error?.message ||
